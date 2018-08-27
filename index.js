@@ -6,44 +6,41 @@ document.addEventListener('DOMContentLoaded',function(){
     json=JSON.parse(req.responseText);
     variance = json.monthlyVariance
     
-    //Parse the dates (year and month) and create a new data array
+    // Parse the month and create a new data array
     var data = []
-    var parseYear = d3.timeParse('%Y')
     var parseMonth = d3.timeParse('%m')
     variance.forEach(function(val){
-      data.push([val.year, parseMonth(val.month), val.variance, val.month]) 
+      data.push([val.year, parseMonth(val.month), val.variance, val.month])
     })
     
-    //Creat x-axis indexes, based on year. (Same year, same index)
-    //data[4] will store x-axis indexes
+    // X-axis indices based on year
     for (var i=0; i<data.length; i++){
       data[i].push(data[i][0] - 1752)
     }
     
     console.log(data[1])
     
-    
     // Set the dimensions of the canvas / graph
-    const padding = 75
-    const w = 1500 - 2*padding;
-    const h = 750 - 2*padding; //600 evenly divides by 12
+    const w = (data.length)/3 + 200
+    const h = 12*40 + 200
+    const padding = 100
     
-    //Can't use parsetime for years before 1900?! Instead, use tickFormat when I define the x-axis
-    //Scale for x-axis (years)
+    // Scale for x-axis (years)
     const xScale = d3.scaleLinear()
-                     .domain([d3.min(data, d => d[0]), d3.max(data, d => d[0])]) 
-                     .range([padding, w+padding]); 
+                     .domain([d3.min(data, d => d[0]), d3.max(data, d => d[0])])  
+                     .range([0, (w - (2*padding))]);
     
-    //Scale for y-axis (months)
+    // Scale for y-axis (months)
     const yScale = d3.scaleTime()
                      .domain([d3.max(data, d => d[1]), d3.min(data, d => d[1])])
-                     .range([h+padding, padding])
+                    .range([(h - (2*padding)), 0])
+                    
     
-    //Define the axes
+    // Define the axes
     const xAxis = d3.axisBottom(xScale)
-                    .tickFormat(d3.format("d")) //Remove commas from years
+                    .tickFormat(d3.format("d")) //remove commas from years
     const yAxis = d3.axisLeft(yScale)
-    
+                    .tickFormat(d3.timeFormat("%B"));                    
     
     // Define the div for the tooltip
     var div = d3.select("a").append("div")	
@@ -53,21 +50,18 @@ document.addEventListener('DOMContentLoaded',function(){
     // Adds the svg canvas
     const svg=d3.select("a")
                 .append("svg")
-                .attr("width", w + 2*padding)
-                .attr("height", h + 2*padding)
+                .attr("width", w)
+                .attr("height", h)
     
-    //Add the rectangles (bars)
+    // Add the rectangles
     svg.selectAll("rect")
                 .data(data)
                 .enter()
                 .append("rect")
-                //.attr("class", "bar")
-                //.attr("transform", "translate(" + (2*padding) + ", " + (0) + ")")
                 .attr("width", 4)
                 .attr("height", 40)
-                //.attr("x", (d, i) => {return (i = d[4]*4)})
-                .attr("x", (d, i) => {return (i = d[4]*4) + padding})
-                .attr("y", (d, i) => {return padding + d[3]*45})
+                .attr("x", (d, i) => {return i = (d[4]*4 + padding - 3)})
+                .attr("y", (d, i) => {return d[3]*40 + 60})
                 .style('fill', (d) => {
                   if (d[2] < -5.86){ //2.8
                     return ("navy")
@@ -91,12 +85,12 @@ document.addEventListener('DOMContentLoaded',function(){
                     return ("darkred")
                   }
                 })
-    //Tooltip appears on hover
+       // Tooltip appears on hover
        .on("mouseover", function(d) {		
            div.transition()		
                .duration(200)		
                .style("opacity", .8);		
-           div .html(d[0] + /*": " + d[1] +*/ " <br/>" +  (8.66+d[2]).toFixed(2) + "C" + " <br/>" + "Variance: " + d[2] )	
+           div .html(d[0] + ": " + d[1] + " <br/>" +  (8.66+d[2]).toFixed(2) + "C" + " <br/>" + "Variance: " + d[2] )	
                .style("left", (d3.event.pageX + 10) + "px")		
                .style("top", (d3.event.pageY - 28) + "px");
        })					
@@ -107,9 +101,9 @@ document.addEventListener('DOMContentLoaded',function(){
        });
 
 
-    //Add and move the X-axis
+    // Add and move the X-axis
     svg.append("g")
-       .attr("transform",  "translate(" + (0) + ", " + (h+padding) + ")")
+       .attr("transform",  "translate(" + (padding) + ", " + (h-padding) + ")")
        .call(xAxis)
        .append("text")
        .attr("class", "label")
@@ -118,16 +112,16 @@ document.addEventListener('DOMContentLoaded',function(){
        .attr("y", padding-2)
        .text("Years")
      
-    //Add and move the Y-axis
+ 
+    // Add and move the Y-axis
     svg.append("g")
-       .attr("transform", "translate(" + (padding) + ", " + (0) + ")")
-       //.attr("transform", "translate(0, 0)")
+       .attr("transform", "translate(" + (padding) + ", " + (padding) + ")")
        .call(yAxis)
        .append("text")
        .attr("class", "label")
        .attr("text-anchor", "end")
        .attr("x", -padding*2)
-       .attr("y", -padding-10)
+       .attr("y", -padding)
        .attr("dy", ".75em")
        .attr("transform", "rotate(-90)")
        .text("Months")
