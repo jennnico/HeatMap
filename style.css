@@ -1,0 +1,25 @@
+body{
+  text-align: center;
+  color: navy
+}
+
+/*Axes titles*/
+.label{
+  fill: black;
+  font-size: 1.5rem;
+}
+
+/*When user hovers over rectangles*/
+div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 7rem;					
+    height: 6rem;					
+    padding: .5rem;				
+    font: 14px sans-serif;		
+    background: black;
+    color: white;
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
