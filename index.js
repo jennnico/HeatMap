@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded',function(){
     json=JSON.parse(req.responseText);
     variance = json.monthlyVariance
     
+    var legend = [2.8, 3.9, 5.0, 6.1, 7.2, 8.3, 9.5, 10.6, 11.7, 12.8, 13.9]
     // Parse the month and create a new data array
     var data = []
     var parseMonth = d3.timeParse('%m')
@@ -17,9 +18,7 @@ document.addEventListener('DOMContentLoaded',function(){
     for (var i=0; i<data.length; i++){
       data[i].push(data[i][0] - 1752)
     }
-    
-    console.log(data[1])
-    
+      
     // Set the dimensions of the canvas / graph
     const w = (data.length)/3 + 200
     const h = 12*40 + 200
@@ -34,18 +33,66 @@ document.addEventListener('DOMContentLoaded',function(){
     const yScale = d3.scaleTime()
                      .domain([d3.max(data, d => d[1]), d3.min(data, d => d[1])])
                     .range([(h - (2*padding)), 0])
-                    
     
     // Define the axes
     const xAxis = d3.axisBottom(xScale)
                     .tickFormat(d3.format("d")) //remove commas from years
     const yAxis = d3.axisLeft(yScale)
-                    .tickFormat(d3.timeFormat("%B"));                    
+                    .tickFormat(d3.timeFormat("%B"));  
     
     // Define the div for the tooltip
     var div = d3.select("a").append("div")	
                 .attr("class", "tooltip")				
                 .style("opacity", 0);
+    
+    // Create the legend
+    const svgLegend=d3.select("div")
+                      .append("svg")
+                      .attr("width", 600)
+                      .attr("height", 150)
+    
+    svgLegend.selectAll("rect")
+             .data(legend)
+             .enter()
+             .append("rect")
+             .attr("style", "outline: thin solid black;")
+             .attr("width", 40)
+             .attr("height", 40)
+             .attr("x", (d, i) => {return i*40})
+             .attr("y", 1)
+             .style('fill', (d) => {
+                  if (d <= 2.8){ //2.8
+                    return ("navy")
+                  }else if (d <= 3.9){ //3.9, dark blue
+                    return ('#0057b5')
+                  } else if (d <= 5){ //5, blue
+                    return ("#4e9bed")
+                  } else if (d <= 6.1){ //6.1, dark teal
+                    return ("#3ddee5")
+                  } else if (d <= 7.2){ //7.2, light teal
+                    return ("#b8f9fc")
+                  } else if (d <= 8.3){ //8.3, light yellow
+                    return ("#f6f9cc")
+                  } else if (d <= 9.5){ //9.5, light orange
+                    return ("#ffea7c")
+                  } else if (d <= 10.6){ //10.6, orange
+                    return ("#f9c425")
+                  } else if (d <= 11.7){ //11.7, dark orange
+                    return ("darkorange")
+                  } else if (d <= 12.8){
+                    return("red")
+                  } else {
+                    return ("darkred")
+                  }
+                })
+    
+    svgLegend.selectAll("text")
+             .data(legend)
+             .enter()
+             .append("text")
+             .attr("x", (d, i) => i*40 + 30 )
+             .attr("y", (d, i) => 60)
+             .text(d=>d.toFixed(1))
 
     // Adds the svg canvas
     const svg=d3.select("a")
@@ -74,14 +121,16 @@ document.addEventListener('DOMContentLoaded',function(){
                   } else if (d[2] < -1.46){ //7.2, light teal
                     return ("#b8f9fc")
                   } else if (d[2] < -.36){ //8.3, light yellow
-                    return ("#ffff87")
+                    return ("#f6f9cc")
                   } else if (d[2] < .84){ //9.5, light orange
-                    return ("#fcd16a")
-                  } else if (d[2] < 1.94){ //10.6, dark orange
-                    return ("#e5a100")
-                  } else if (d[2] < 3.04){ //11.7
+                    return ("#ffea7c")
+                  } else if (d[2] < 1.94){ //10.6, orange
+                    return ("#f9c425")
+                  } else if (d[2] < 3.04){ //11.7, dark orange
+                    return ("darkorange")
+                  } else if (d[2] < 4.14) { //12.8, red
                     return ("red")
-                  } else {
+                  } else{
                     return ("darkred")
                   }
                 })
@@ -90,7 +139,7 @@ document.addEventListener('DOMContentLoaded',function(){
            div.transition()		
                .duration(200)		
                .style("opacity", .8);		
-           div .html(d[0] + ": " + d[1] + " <br/>" +  (8.66+d[2]).toFixed(2) + "C" + " <br/>" + "Variance: " + d[2] )	
+           div .html(d[0] + ": " + d[1] + " <br/>" +  (8.66+d[2]).toFixed(2) + String.fromCharCode(176) + "C" + " <br/>" + "Variance: " + d[2] + String.fromCharCode(176))	
                .style("left", (d3.event.pageX + 10) + "px")		
                .style("top", (d3.event.pageY - 28) + "px");
        })					
