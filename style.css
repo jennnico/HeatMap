@@ -9,12 +9,12 @@ body{
   font-size: 1.5rem;
 }
 
-/*When user hovers over rectangles*/
+/*When user hovers over circles*/
 div.tooltip {	
     position: absolute;			
     text-align: center;			
-    width: 7rem;					
-    height: 6rem;					
+    width: 10rem;					
+    height: 8rem;					
     padding: .5rem;				
     font: 14px sans-serif;		
     background: black;
@@ -23,3 +23,11 @@ div.tooltip {
     border-radius: 8px;			
     pointer-events: none;			
 }
+
+ /*Grid container of graph and key*/
+.grid-container {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+ }
+
+
