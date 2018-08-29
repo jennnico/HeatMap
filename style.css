@@ -24,10 +24,9 @@ div.tooltip {
     pointer-events: none;			
 }
 
- /*Grid container of graph and key*/
-.grid-container {
-  display: inline-grid;
-  grid-template-columns: auto auto;
- }
+/*Move the graph up*/
+.heading{
+  margin-bottom: -100px;
+}
 
 
