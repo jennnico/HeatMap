@@ -6,13 +6,14 @@ document.addEventListener('DOMContentLoaded',function(){
     json=JSON.parse(req.responseText);
     variance = json.monthlyVariance
     
-    var legend = [2.8, 3.9, 5.0, 6.1, 7.2, 8.3, 9.5, 10.6, 11.7, 12.8, 13.9]
     // Parse the month and create a new data array
     var data = []
     var parseMonth = d3.timeParse('%m')
     variance.forEach(function(val){
       data.push([val.year, parseMonth(val.month), val.variance, val.month])
     })
+    const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    var legend = [2.8, 3.9, 5.0, 6.1, 7.2, 8.3, 9.5, 10.6, 11.7, 12.8, 13.9]
     
     // X-axis indices based on year
     for (var i=0; i<data.length; i++){
@@ -29,24 +30,36 @@ document.addEventListener('DOMContentLoaded',function(){
                      .domain([d3.min(data, d => d[0]), d3.max(data, d => d[0])])  
                      .range([0, (w - (2*padding))]);
     
+//1. Here, months are not centered.
     // Scale for y-axis (months)
-    const yScale = d3.scaleTime()
+    /*const yScale = d3.scaleTime()
                      .domain([d3.max(data, d => d[1]), d3.min(data, d => d[1])])
-                    .range([(h - (2*padding)), 0])
+                     .range([(h - (2*padding)), 40])*/
+
+//2. Here, axes don't meet. 
+    // Scale for y-axis (months)
+    const yScale = d3.scaleOrdinal()
+    .domain(months)
+    .range(months.map((month, i)=> {
+      return i * 40 + 20
+    }))
     
     // Define the axes
     const xAxis = d3.axisBottom(xScale)
                     .tickFormat(d3.format("d")) //remove commas from years
     const yAxis = d3.axisLeft(yScale)
-                    .tickFormat(d3.timeFormat("%B"));  
+                   // .tickFormat(d3.timeFormat("%B"));  //use with y-scale #1
+                   .tickFormat(month => { //use with y-scale #2
+                     return d3.timeFormat("%B")(parseMonth(month))
+                    });
+
     
     // Define the div for the tooltip
-    var div = d3.select("a").append("div")	
+    var div = d3.select("#graph").append("div")	
                 .attr("class", "tooltip")				
                 .style("opacity", 0);
     
-    // Create the legend
-    const svgLegend=d3.select("div")
+    const svgLegend=d3.select("#legend")
                       .append("svg")
                       .attr("width", 600)
                       .attr("height", 150)
@@ -95,10 +108,11 @@ document.addEventListener('DOMContentLoaded',function(){
              .text(d=>d.toFixed(1))
 
     // Adds the svg canvas
-    const svg=d3.select("a")
+    const svg=d3.select("#graph")
                 .append("svg")
                 .attr("width", w)
                 .attr("height", h)
+                //.style("outline", "thin solid black")
     
     // Add the rectangles
     svg.selectAll("rect")
@@ -135,15 +149,24 @@ document.addEventListener('DOMContentLoaded',function(){
                   }
                 })
        // Tooltip appears on hover
-       .on("mouseover", function(d) {		
+       .on("mouseover", function(d) {	
+      d3.select(this)
+        .style("outline", "thin solid black")
+      //modified width and height so outline would display properly
+        .style("width", 3)
+        .style("height", 39)
            div.transition()		
                .duration(200)		
                .style("opacity", .8);		
-           div .html(d[0] + ": " + d[1] + " <br/>" +  (8.66+d[2]).toFixed(2) + String.fromCharCode(176) + "C" + " <br/>" + "Variance: " + d[2] + String.fromCharCode(176))	
+           div .html(d[0] + ": " + d3.timeFormat("%B")(d[1])  + " <br/>" +  (8.66+d[2]).toFixed(2) + String.fromCharCode(176) + "C" + " <br/>" + "Variance: " + d[2] + String.fromCharCode(176))	
                .style("left", (d3.event.pageX + 10) + "px")		
                .style("top", (d3.event.pageY - 28) + "px");
-       })					
-       .on("mouseout", function(d) {		
+       })	
+       .on("mouseout", function(d) {	
+          d3.select(this)
+            .style("outline", "thin solid transparent")
+            .style("width", 4)
+            .style("height", 40)
            div.transition()		
                .duration(500)		
                .style("opacity", 0);	
@@ -158,7 +181,7 @@ document.addEventListener('DOMContentLoaded',function(){
        .attr("class", "label")
        .attr("text-anchor", "end")
        .attr("x", w/2)
-       .attr("y", padding-2)
+       .attr("y", padding/2)
        .text("Years")
      
  
