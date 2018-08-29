@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded',function(){
     // Scale for x-axis (years)
     const xScale = d3.scaleLinear()
                      .domain([d3.min(data, d => d[0]), d3.max(data, d => d[0])])  
-                     .range([0, (w - (2*padding))]);
+                     .range([0, (w - (2*padding) -3)]);
     
 //1. Here, months are not centered.
     // Scale for y-axis (months)
